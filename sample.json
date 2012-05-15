@@ -1,0 +1,40 @@
+{
+  "countries_slice": {
+    "dimensions": {
+      "country": {},
+      "time:year": {}
+    },
+    "metrics": {
+      "population": {}
+    },
+    "table": {
+      "ref": "countries_slice_table"
+    }
+  },
+  "states_slice": {
+    "dimensions": {
+      "state": {},
+      "time:year": {}
+    },
+    "metrics": {
+      "population": {},
+      "unemployment_rate": {}
+    },
+    "table": {
+      "ref": "states_slice_table"
+    }
+  },
+  "countries_gender_slice": {
+    "dimensions": {
+      "country": {},
+      "gender": {},
+      "time:year": {}
+    },
+    "metrics": {
+      "population": {}
+    },
+    "table": {
+      "ref": "countries_gender_slice_table"
+    }
+  }
+}

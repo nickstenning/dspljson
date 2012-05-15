@@ -1,0 +1,153 @@
+#!/usr/bin/env coffee
+
+fs = require 'fs'
+et = require 'elementtree'
+
+main = ->
+
+  data = []
+
+  process.stdin.on 'data', (d) ->
+    data.push(d)
+  process.stdin.on 'end', () ->
+    console.log(JSON.stringify(xml2json(data.join(''))))
+  process.stdin.resume()
+
+inject = (ary, cb) ->
+  fn = (obj, el) ->
+    cb(obj, el)
+    obj
+  ary.reduce(fn, {})
+
+coerce_type = (value, type='string') ->
+  if type == 'string'
+    '' + value
+  else if type == 'integer'
+    parseInt(value, 10)
+  else if type == 'float'
+    parseFloat(value)
+  else if type == 'boolean'
+    (not not value) and value != 'false'
+  else if type == 'date'
+    # TODO: proper date parsing
+    value
+  else
+    throw "Unknown type: '#{type}'"
+
+parse_values = (nodes, type='string') ->
+  for n in nodes
+    if not n.attrib['xml:lang']? or n.attrib['xml:lang'] == 'en'
+      return n.text
+
+  return nodes[0].text
+
+parse_meta = (node) ->
+  inject node.findall('./*'), (res, key) ->
+    res[key.tag] = parse_values(key.findall('./value'))
+
+parse_properties = (nodes) ->
+  inject nodes, (res, node) ->
+    if node.attrib.isParent?
+      res[node.attrib.concept] = {isParent: true}
+    else
+      p = res[node.attrib.id] = {}
+      p.info = parse_meta(node.find('./info'))
+      p.type = node.find('./type').attrib.ref
+
+parse_attributes = (nodes) ->
+  inject nodes, (res, node) ->
+    a = res[node.attrib.id] = {}
+    a.type = node.find('./type').attrib.ref
+    a.value = coerce_type(parse_values(node.findall('./value')), a.type)
+
+parse_concepts = (nodes) ->
+  inject nodes, (res, node) ->
+    c = res[node.attrib.id] = {}
+    c.info = parse_meta(node.find('./info'))
+    c.type = node.find('./type').attrib.ref
+
+    table = node.find('./table')
+    if table
+      c.table = table.attrib.ref
+
+    topics = node.findall('./topic')
+    if topics.length > 0
+      c.topics = (t.attrib.ref for t in topics)
+
+    properties = node.findall('./property')
+    if properties.length > 0
+      c.properties = parse_properties(properties)
+
+    attributes = node.findall('./attribute')
+    if attributes.length > 0
+      c.properties = parse_attributes(attributes)
+
+parse_topics = (nodes) ->
+  inject nodes, (res, node) ->
+    t = res[node.attrib.id] = {}
+    t.info = parse_meta(node.find('./info'))
+
+    topics = node.findall('./topic')
+    if topics.length > 0
+      t.topics = parse_topics(topics)
+
+parse_columns = (nodes) ->
+  inject nodes, (res, node) ->
+    c = res[node.attrib.id] = {}
+    c.type = node.attrib.type
+
+    if node.attrib.format?
+      c.format = node.attrib.format
+
+    value = node.find('./value')
+    if value
+      c.value = value.text
+
+parse_tables = (nodes) ->
+  inject nodes, (res, node) ->
+    t = res[node.attrib.id] = {}
+
+    columns = node.findall('./column')
+    if columns.length > 0
+      t.columns = parse_columns(columns)
+
+    file = node.find('./data/file')
+    if file
+      t.file =
+        format: file.attrib.format
+        encoding: file.attrib.encoding
+        path: file.text
+
+parse_dimensions_metrics = (nodes) ->
+  inject nodes, (res, node) ->
+      res[node.attrib.concept] = {}
+
+parse_slices = (nodes) ->
+  inject nodes, (res, node) ->
+    s = res[node.attrib.id] = {}
+
+    for k in ['dimension', 'metric']
+      x = node.findall('./' + k)
+      if x.length > 0
+        s[k + 's'] = parse_dimensions_metrics(x)
+
+    table = node.find('./table')
+    if table
+      s.table = {}
+      s.table.ref = table.attrib.ref
+
+xml2json = (xml) ->
+  xml = et.parse(xml)
+  obj = {}
+
+  obj.info = parse_meta(xml.find('./info'))
+  obj.provider = parse_meta(xml.find('./provider'))
+  obj.concepts = parse_concepts(xml.findall('./concepts/concept'))
+  obj.topics = parse_topics(xml.findall('./topics/topic'))
+  obj.slices = parse_slices(xml.findall('./slices/slice'))
+  obj.tables = parse_tables(xml.findall('./tables/table'))
+
+
+  return obj
+
+main()
