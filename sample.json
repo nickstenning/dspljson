@@ -1,40 +1,275 @@
 {
-  "countries_slice": {
-    "dimensions": {
-      "country": {},
-      "time:year": {}
+  "info": {
+    "name": "My statistics",
+    "description": "Some very interesting statistics about countries",
+    "url": "http://www.stats-bureau.com/mystats/info.html"
+  },
+  "provider": {
+    "name": "Bureau of Statistics",
+    "url": "http://www.stats-bureau.com"
+  },
+  "concepts": {
+    "population": {
+      "info": {
+        "name": "Population",
+        "description": "Size of the resident population."
+      },
+      "type": "integer",
+      "topics": [
+        "population_indicators"
+      ]
     },
-    "metrics": {
-      "population": {}
+    "country": {
+      "info": {
+        "name": "Country",
+        "description": "My list of countries"
+      },
+      "type": "string",
+      "table": "countries_table",
+      "properties": {
+        "name": {
+          "info": {
+            "name": "Country name",
+            "description": "The official name of the country"
+          },
+          "type": "string"
+        }
+      }
     },
-    "table": {
-      "ref": "countries_slice_table"
+    "state": {
+      "info": {
+        "name": "State",
+        "description": "US states"
+      },
+      "type": "string",
+      "table": "states_table",
+      "properties": {
+        "country": {
+          "isParent": true
+        }
+      }
+    },
+    "gender": {
+      "info": {
+        "name": "Gender",
+        "description": "Gender, Male or Female",
+        "pluralName": "Genders",
+        "totalName": "Both genders"
+      },
+      "type": "string",
+      "table": "genders_table"
+    },
+    "unemployment_rate": {
+      "info": {
+        "name": "unemployment rate",
+        "description": "The percent of the labor force that is unemployed, not seasonally\n            adjusted.",
+        "url": "http://www.bls.gov/cps/cps_htgm.htm"
+      },
+      "type": "float",
+      "topics": [
+        "social_indicators"
+      ],
+      "properties": {
+        "is_percentage": {
+          "type": "boolean",
+          "value": true
+        }
+      }
     }
   },
-  "states_slice": {
-    "dimensions": {
-      "state": {},
-      "time:year": {}
+  "topics": {
+    "geography": {
+      "info": {
+        "name": "Geography"
+      }
     },
-    "metrics": {
-      "population": {},
-      "unemployment_rate": {}
-    },
-    "table": {
-      "ref": "states_slice_table"
+    "social_indicators": {
+      "info": {
+        "name": "Social indicators"
+      },
+      "topics": {
+        "population_indicators": {
+          "info": {
+            "name": "Population indicators"
+          }
+        },
+        "poverty_and_income": {
+          "info": {
+            "name": "Poverty & income"
+          }
+        },
+        "health": {
+          "info": {
+            "name": "Health"
+          }
+        }
+      }
     }
   },
-  "countries_gender_slice": {
-    "dimensions": {
-      "country": {},
-      "gender": {},
-      "time:year": {}
+  "slices": {
+    "countries_slice": {
+      "dimensions": {
+        "country": {},
+        "time:year": {}
+      },
+      "metrics": {
+        "population": {}
+      },
+      "table": {
+        "ref": "countries_slice_table"
+      }
     },
-    "metrics": {
-      "population": {}
+    "states_slice": {
+      "dimensions": {
+        "state": {},
+        "time:year": {}
+      },
+      "metrics": {
+        "population": {},
+        "unemployment_rate": {}
+      },
+      "table": {
+        "ref": "states_slice_table"
+      }
     },
-    "table": {
-      "ref": "countries_gender_slice_table"
+    "countries_gender_slice": {
+      "dimensions": {
+        "country": {},
+        "gender": {},
+        "time:year": {}
+      },
+      "metrics": {
+        "population": {}
+      },
+      "table": {
+        "ref": "countries_gender_slice_table"
+      }
+    }
+  },
+  "tables": {
+    "countries_table": {
+      "columns": {
+        "country": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "latitude": {
+          "type": "float"
+        },
+        "longitude": {
+          "type": "float"
+        }
+      },
+      "file": {
+        "format": "csv",
+        "encoding": "utf-8",
+        "path": "countries.csv"
+      }
+    },
+    "countries_slice_table": {
+      "columns": {
+        "country": {
+          "type": "string"
+        },
+        "year": {
+          "type": "date",
+          "format": "yyyy"
+        },
+        "population": {
+          "type": "integer"
+        }
+      },
+      "file": {
+        "format": "csv",
+        "encoding": "utf-8",
+        "path": "country_slice.csv"
+      }
+    },
+    "states_table": {
+      "columns": {
+        "state": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string",
+          "value": "US"
+        },
+        "latitude": {
+          "type": "float"
+        },
+        "longitude": {
+          "type": "float"
+        }
+      },
+      "file": {
+        "format": "csv",
+        "encoding": "utf-8",
+        "path": "states.csv"
+      }
+    },
+    "states_slice_table": {
+      "columns": {
+        "state": {
+          "type": "string"
+        },
+        "year": {
+          "type": "date",
+          "format": "yyyy"
+        },
+        "population": {
+          "type": "integer"
+        },
+        "unemployment_rate": {
+          "type": "float"
+        }
+      },
+      "file": {
+        "format": "csv",
+        "encoding": "utf-8",
+        "path": "state_slice.csv"
+      }
+    },
+    "genders_table": {
+      "columns": {
+        "gender": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "file": {
+        "format": "csv",
+        "encoding": "utf-8",
+        "path": "genders.csv"
+      }
+    },
+    "countries_gender_slice_table": {
+      "columns": {
+        "country": {
+          "type": "string"
+        },
+        "gender": {
+          "type": "string"
+        },
+        "year": {
+          "type": "date",
+          "format": "yyyy"
+        },
+        "population": {
+          "type": "integer"
+        }
+      },
+      "file": {
+        "format": "csv",
+        "encoding": "utf-8",
+        "path": "gender_country_slice.csv"
+      }
     }
   }
 }
